@@ -52,7 +52,7 @@
     });
 
     function chatGPT() {
-      const api_key = "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";
+      const api_key = "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";
       const content = document.getElementById('content').value;
       $('#loading').show();
 
@@ -92,4 +92,3 @@
 </body>
 
 </html>
-
