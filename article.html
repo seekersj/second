@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>chatGPT API</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <style>
+    /* page-loading */
+    #loading {
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      position: fixed;
+      display: block;
+      opacity: 0.6;
+      background: #e4e4e4;
+      z-index: 99;
+      text-align: center;
+    }
+
+    #loading>img {
+      position: absolute;
+      top: 40%;
+      left: 45%;
+      z-index: 100;
+    }
+
+    #loading>p {
+      position: absolute;
+      top: 57%;
+      left: 43%;
+      z-index: 101;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>chatGPT API</h1>
+  <div>덕성초 4-1 친구들, 이해안가는 기사를 넣어보세요!!</div>
+
+  <textarea id="content" name="content" required></textarea>
+  <button onclick="chatGPT()">입력</button>
+  <div id="result"></div>
+
+  <div id="loading">
+    <img src="https://studentrights.sen.go.kr/images/common/loading.gif">
+  </div>
+  <script>
+    $(document).ready(function () {
+      $('#loading').hide();
+    });
+
+    function chatGPT() {
+      const api_key = "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";
+      const content = document.getElementById('content').value;
+      $('#loading').show();
+
+      const messages = [
+        { role: 'system', content: '나는 초등학교 4학년 학생이야. 글을 주면 내가 이해하기 쉽게 설명해줘' },
+        { role: 'user', content: content },
+      ];
+
+      const data = {
+        model: 'gpt-3.5-turbo',
+        temperature: 0.5,
+        n: 1,
+        messages: messages,
+      };
+
+      $.ajax({
+        url: "https://api.openai.com/v1/chat/completions",
+        method: 'POST',
+        headers: {
+          Authorization: "Bearer " + api_key,
+          'Content-Type': 'application/json',
+        },
+        data: JSON.stringify(data),
+      }).then(function (response) {
+        $('#loading').hide();
+        console.log(response);
+        let result = document.getElementById('result');
+        let pre = document.createElement('pre');
+
+        pre.innerHTML = "\n\n" + response.choices[0].message.content;
+        result.appendChild(pre);
+
+        document.getElementById('content').value = '';
+      });
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>chatGPT API</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <style>
+    /* page-loading */
+    #loading {
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      position: fixed;
+      display: block;
+      opacity: 0.6;
+      background: #e4e4e4;
+      z-index: 99;
+      text-align: center;
+    }
+
+    #loading>img {
+      position: absolute;
+      top: 40%;
+      left: 45%;
+      z-index: 100;
+    }
+
+    #loading>p {
+      position: absolute;
+      top: 57%;
+      left: 43%;
+      z-index: 101;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>chatGPT API</h1>
+  <div>덕성초 4-1 친구들, 번갈아가며 이야기를 지어봅시다.
+      시작하고 싶은 이야기가 있다면 써주고, 없으면 바로 입력을 눌러보세요!!</div>
+
+  <textarea id="content" name="content" required></textarea>
+  <button onclick="chatGPT()">입력</button>
+  <div id="result"></div>
+
+  <div id="loading">
+    <img src="https://studentrights.sen.go.kr/images/common/loading.gif">
+  </div>
+  <script>
+    $(document).ready(function () {
+      $('#loading').hide();
+    });
+
+    function saveConversation(conversation) {
+    fetch("/save_conversation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(conversation),
+    })
+      .then((response) => response.json())
+      .then((data) => console.log(data))
+      .catch((error) => console.error(error));
+  }
+
+    function chatGPT() {
+      const api_key = "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";
+      const content = document.getElementById('content').value;
+      $('#loading').show();
+
+      let messages = [
+        { role: 'system', content: '나는 초등학교 4학년 학생이야. 우리 함께 재미있는 이야기를 한 줄씩 번갈아가며 만들자.' },
+        { role: 'user', content: content },
+      ];
+
+      let chatHistory = document.getElementById('result').getElementsByTagName('pre');
+      for (let i = 0; i < chatHistory.length; i++) {
+        let role = (i % 2 === 0) ? 'user' : 'assistant';
+        messages.push({ role: role, content: chatHistory[i].innerText });
+      }
+
+      const data = {
+        model: 'gpt-3.5-turbo',
+        temperature: 0.5,
+        n: 1,
+        messages: messages,
+      };
+
+      $.ajax({
+        url: "https://api.openai.com/v1/chat/completions",
+        method: 'POST',
+        headers: {
+          Authorization: "Bearer " + api_key,
+          'Content-Type': 'application/json',
+        },
+        data: JSON.stringify(data),
+      }).then(function (response) {
+        $('#loading').hide();
+        console.log(response);
+        let result = document.getElementById('result');
+        let preUser = document.createElement('pre');
+        let preChatGPT = document.createElement('pre');
+
+        preUser.innerText = "User: " + content;
+        preChatGPT.innerText = "chatGPT: " + response.choices[0].message.content;
+
+        result.appendChild(preUser);
+        result.appendChild(preChatGPT);
+
+        const conversation = {
+        user_message: content,
+        chatgpt_message: response.choices[0].message.content
+      };
+      saveConversation(conversation);
+        document.getElementById('content').value = '';
+      });
+    }
+  </script>
+</body>
+
+</html>
